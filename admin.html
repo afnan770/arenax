@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Arena X – Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest-admin.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0e1117">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2716%27 fill=%27%23ff7a1a%27/%3E%3Cpath d=%27M22 22L42 42M42 22L22 42%27 stroke=%27%231a0f05%27 stroke-width=%276%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#0b0e14;--side:#10141c;--card:#151a24;--line:#222a38;--ac:#ff7a1a;--ac2:#ffc24a;--tx:#eef1f6;--mut:#8b95a7;--ok:#3ecf8e;--bad:#ff5d5d;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,.hd{font-family:Rajdhani,system-ui,sans-serif;font-weight:700;letter-spacing:.3px}
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.side{position:sticky;top:0;height:100vh;background:var(--side);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;font:700 22px Rajdhani,sans-serif;color:var(--ac);padding:0 6px}.brand small{display:block;font:500 12px system-ui;color:var(--mut)}
+.nv{display:flex;flex-direction:column;gap:4px}
+.tab{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;border:0;background:none;color:var(--mut);font:inherit;font-size:14px;cursor:pointer;text-align:left;position:relative}
+.tab:hover{background:#ffffff0a;color:var(--tx)}
+.tab.on{background:#ff7a1a1c;color:var(--ac2);font-weight:600}.tab.on:before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:4px;border-radius:0 4px 4px 0;background:var(--ac)}
+.tab .n{margin-left:auto;background:var(--bad);color:#fff;border-radius:10px;font-size:11px;padding:1px 7px}
+.out{margin-top:auto}
+.main{padding:26px 28px 50px;min-width:0;max-width:1100px}
+.ph{margin-bottom:20px}.ph h1{font-size:30px;line-height:1.1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sub{color:var(--mut);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.st{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.st .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex:none}
+.st small{color:var(--mut);display:block}.st b{font:700 24px Rajdhani,sans-serif;line-height:1.1}
+.alert{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#ff7a1a18;border:1px solid #ff7a1a55;border-radius:12px;padding:12px 14px;margin-bottom:14px}
+input,select,textarea{width:100%;background:#0e121a;border:1px solid var(--line);border-radius:9px;padding:10px;color:var(--tx);font:inherit;outline:0}
+input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 3px #ff7a1a26}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:4px}
+.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+button.p,button.g,button.r{border-radius:9px;padding:8px 14px;font:600 13px inherit;cursor:pointer;border:0;transition:filter .15s}
+button.p{background:linear-gradient(90deg,var(--ac2),var(--ac));color:#1a0f05}button.p:hover{filter:brightness(1.08)}
+button.g{background:none;border:1px solid var(--line);color:var(--tx)}button.g:hover{background:#ffffff0a}
+button.r{background:#ff5d5d14;border:1px solid #ff5d5d66;color:var(--bad)}
+details.card summary{cursor:pointer;font:700 18px Rajdhani,sans-serif;list-style:none}details.card[open] summary{margin-bottom:14px}
+.tbl{overflow-x:auto;padding:0}table{width:100%;border-collapse:collapse;min-width:560px}
+th{padding:11px 14px;text-align:left;color:var(--mut);font-weight:500;font-size:12px;background:#10141c;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}tr:last-child td{border:0}tbody tr:hover td,table tr:hover td{background:#ffffff05}
+.tag{font-size:12px;padding:3px 10px;border-radius:20px;background:#232a38;color:var(--ac2);display:inline-block}.tag.live{background:#ff5d5d26;color:#ff8a8a}.tag.ok{background:#3ecf8e1f;color:var(--ok)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.bar{height:5px;background:#232a38;border-radius:3px;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:var(--ac)}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.mrow:last-child{border:0}
+.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:20;padding:14px}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow:auto}
+#toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:10px;display:none;z-index:30}
+.login{max-width:360px;margin:16vh auto;padding:24px;background:var(--card);border:1px solid var(--line);border-radius:16px}.login input{margin:6px 0 14px}
+@media(max-width:820px){.shell{display:block}.side{position:sticky;height:auto;z-index:6;flex-direction:column;gap:8px;padding:10px 12px;border-right:0;border-bottom:1px solid var(--line)}
+.nv{flex-direction:row;overflow-x:auto}.tab{flex:none;padding:8px 12px}.tab.on:before{display:none}.out{position:absolute;top:10px;right:12px;margin:0}.main{padding:18px 14px 40px}.ph h1{font-size:26px}}
+</style></head><body>
+<div id="app"></div><div id="toast"></div>
+<script>
+const logo=(s=28)=>`<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-label="Arena X logo"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc24a"/><stop offset="1" stop-color="#ff5a1a"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#lg)"/><circle cx="32" cy="32" r="17" fill="none" stroke="#1a0f05" stroke-width="3.5"/><path d="M22 22L42 42M42 22L22 42" stroke="#1a0f05" stroke-width="6" stroke-linecap="round"/><path d="M32 6v9M32 49v9M6 32h9M49 32h9" stroke="#1a0f05" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+const K='ffx_db',$=s=>document.querySelector(s),
+esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+fmt=t=>new Date(t).toLocaleString([],{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+function seed(){const t=Date.now(),h=36e5,m=(no,title,cat,type,map,fee,prize,kill,slots,dt,desc,pools)=>({id:no,no,title,cat,type,map,fee,prize,kill,slots,start:t+dt*h,desc,pools,joined:[],room:'',pass:'',status:'upcoming',results:[]});
+const d={users:[],dep:[],wd:[],n:10,mn:100,pass:'admin123',cfg:{},
+matches:[m(1,'Bermuda Full Map Squad','BR','Squad','Bermuda',50,1000,10,48,3,'Full map squad match. Play fair.','1st = 500\n2nd = 300\n3rd = 200'),m(2,'Clash Squad 4v4','CS','Squad','Bermuda',30,200,0,8,5,'4v4 clash squad.','Winner team = 200'),m(3,'Lone Wolf 1v1','LW','Solo','Lone Wolf',20,35,0,2,2,'','Winner = 35'),m(4,'Free Match Giveaway','FR','Solo','Bermuda',0,200,0,100,24,'Free match. Room ID is given in the app.','1st = 200'),m(5,'One Taka Special','SP','Solo','Bermuda',1,100,0,48,30,'Special mode for ৳1.','1st = 100')]};
+save(d);return d}
+const CFG=window.FIREBASE_CONFIG,CLOUD=!!(CFG&&CFG.projectId&&window.firebase),COLS=['users','matches','dep','wd'];
+let DB=null,PREV={},ready=false,fs;
+const blank=()=>({users:[],matches:[],dep:[],wd:[],n:10,mn:100,pass:'admin123',cfg:{}});
+const load=()=>DB||blank();
+function save(d){DB=d;push(d)}
+function push(d){const b=fs.batch();let n=0;
+ COLS.forEach(c=>{const cur=new Map(d[c].map(x=>[String(x.id),JSON.stringify(x)])),old=PREV[c]||new Map();
+  cur.forEach((v,id)=>{if(!old.has(id)||(c!='users'&&c!='matches'&&old.get(id)!==v)){b.set(fs.collection(c).doc(id),JSON.parse(v));n++}});
+  old.forEach((v,id)=>{if(!cur.has(id)){b.delete(fs.collection(c).doc(id));n++}});PREV[c]=cur});
+ const mm=JSON.stringify({n:d.n,mn:d.mn,cfg:d.cfg||{}}),ma=JSON.stringify({pass:d.pass});
+ if(PREV.main!==mm){b.set(fs.collection('meta').doc('main'),JSON.parse(mm));PREV.main=mm;n++}
+ if(PREV.adm!==ma){b.set(fs.collection('meta').doc('admin'),JSON.parse(ma));PREV.adm=ma;n++}
+ if(n)b.commit().catch(e=>toast('Cloud save failed: '+e.message))}
+function startCloud(){firebase.initializeApp(CFG);fs=firebase.firestore();
+ const st={users:[],matches:[],dep:[],wd:[],main:{},adm:{}},got=new Set();
+ const upd=()=>{DB={...blank(),...st.main,...st.adm,cfg:st.main.cfg||{},users:st.users,matches:st.matches,dep:st.dep,wd:st.wd};
+  COLS.forEach(c=>PREV[c]=new Map(DB[c].map(x=>[String(x.id),JSON.stringify(x)])));PREV.main=JSON.stringify({n:DB.n,mn:DB.mn,cfg:DB.cfg});PREV.adm=JSON.stringify({pass:DB.pass});
+  if(got.size>=6){ready=true;render()}};
+ COLS.forEach(c=>fs.collection(c).onSnapshot(x=>{st[c]=x.docs.map(y=>y.data());got.add(c);upd()},e=>toast(e.message)));
+ fs.collection('meta').doc('main').onSnapshot(x=>{st.main=x.exists?x.data():{};got.add('main');upd()},e=>toast(e.message));
+ fs.collection('meta').doc('admin').onSnapshot(x=>{st.adm=x.exists?x.data():{};got.add('adm');upd()},e=>toast(e.message))}
+const F=()=>firebase.firestore.FieldValue,upd=(c,id,o)=>fs.collection(c).doc(String(id)).update(o).catch(e=>toast(e.message)),
+userTx=(id,fn)=>fs.runTransaction(async tr=>{const r=fs.collection('users').doc(String(id)),x=await tr.get(r);if(!x.exists)return;const u=x.data();fn(u);tr.set(r,u)}).catch(e=>toast(e.message));
+const addTx=(u,txt,amt)=>{u.tx=u.tx||[];u.tx.unshift({t:Date.now(),txt,amt});if(u.tx.length>50)u.tx.length=50};
+const toast=m=>{const e=$('#toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2400)};
+let d,tab='dash',q='';
+const commit=()=>{save(d);render()};
+
+function render(){if(!CLOUD)return $('#app').innerHTML='<div style="padding:30vh 20px;text-align:center;color:#8b95a7">Open this admin panel from your website link.</div>';if(!ready)return $('#app').innerHTML='<div style="padding:40vh 0;text-align:center;color:#8b95a7">Loading…</div>';d=load();
+ if(!sessionStorage.ffx_admin)return $('#app').innerHTML=`<div class="login">${logo(60)}<h1 class="hd logo" style="font-size:34px">ARENA X Admin</h1><p class="sub" style="margin:6px 0 18px">Default password is admin123. Change it in Settings.</p><label>Password</label><input id="pw" type="password" onkeydown="if(event.key=='Enter')login()"><button class="p" style="width:100%" onclick="login()">Log in</button></div>`;
+ const pd=d.dep.filter(x=>x.status=='pending').length+d.wd.filter(x=>x.status=='pending').length;
+ const T=[['dash','📊','Dashboard'],['matches','🎮','Matches'],['users','👥','Players'],['money','💰','Money'],['set','⚙️','Settings']],
+ H={dash:['Dashboard','Overview of your tournaments and money'],matches:['Matches','Create matches, publish rooms and pay winners'],users:['Players','Search players, adjust balances and ban cheaters'],money:['Money','Approve deposits and withdrawals'],set:['Settings','Payment numbers, rules and app look']};
+ $('#app').innerHTML=`<div class="shell"><aside class="side"><div class="brand">${logo(36)}<div>ARENA X<small>Admin panel</small></div></div>
+ <div class="nv">${T.map(([k,i,l])=>`<button class="tab ${tab==k?'on':''}" onclick="tab='${k}';render();scrollTo(0,0)"><span>${i}</span>${l}${k=='money'&&pd?`<span class="n">${pd}</span>`:''}</button>`).join('')}</div>
+ <button class="g out" onclick="delete sessionStorage.ffx_admin;render()">Log out</button></aside>
+ <main class="main"><div class="ph"><h1 class="hd">${H[tab][0]}</h1><p class="sub">${H[tab][1]}</p></div>${({dash,matches,users,money,set})[tab]()}</main></div>`}
+function login(){const d=load();if($('#pw').value==d.pass){sessionStorage.ffx_admin=1;render()}else toast('Wrong password')}
+
+function dash(){const ok=(a,t)=>a.filter(x=>x.status=='approved').reduce((s,x)=>s+x.amt,0),dep=ok(d.dep),wd=ok(d.wd),bal=d.users.reduce((s,u)=>s+u.bal,0),pd=d.dep.filter(x=>x.status=='pending').length+d.wd.filter(x=>x.status=='pending').length;
+ const fees=d.matches.reduce((s,m)=>s+m.joined.length*m.fee,0),paid=d.matches.flatMap(m=>m.results).reduce((s,r)=>s+r.won,0),pr=fees-paid;
+ const S=[['👥','Players',d.users.length,'#3a7bd5'],['🎮','Matches',d.matches.length,'#9b59b6'],['🔴','Live now',d.matches.filter(m=>m.status=='live').length,'#e8365d'],['⬇️','Total deposits','৳'+dep,'#2ecc71'],['⬆️','Total withdrawn','৳'+wd,'#ff7a1a'],['👛','Player balances','৳'+bal,'#2bb3c0'],['🎟️','Entry fees','৳'+fees,'#f4b400'],['🏆','Prizes paid','৳'+paid,'#e91e8c'],['📈','Profit','৳'+pr,pr>=0?'#2ecc71':'#e8365d']];
+ const nx=d.matches.filter(m=>m.status!='completed').sort((a,b)=>a.start-b.start).slice(0,6);
+ return `${pd?`<div class="alert"><span>⚠️ <b>${pd}</b> deposit or withdrawal request${pd>1?'s':''} waiting for you</span><button class="p" onclick="tab='money';render()">Review</button></div>`:''}
+ <div class="stats">${S.map(([i,l,v,c])=>`<div class="st"><span class="ic" style="background:${c}26;color:${c}">${i}</span><div><small>${l}</small><b>${v}</b></div></div>`).join('')}</div>
+ <div class="card"><div class="row" style="margin-bottom:6px"><h3 class="hd" style="font-size:18px">Next matches</h3><button class="g" onclick="tab='matches';render()">Manage</button></div>
+ ${nx.map(m=>`<div class="mrow"><div style="min-width:0"><b>${esc(m.title)}</b><div class="sub">#${m.no||m.id} · ${fmt(m.start)}</div></div><div style="width:130px"><div class="sub" style="text-align:right">${m.joined.length}/${m.slots} joined</div><div class="bar"><i style="width:${m.joined.length/m.slots*100}%"></i></div></div><span class="tag ${m.status=='live'?'live':''}">${m.status}</span></div>`).join('')||'<div class="sub" style="padding:14px 0">No upcoming matches. Create one in Matches.</div>'}</div>`}
+
+function matches(){const L=[...d.matches].sort((a,b)=>b.start-a.start);
+ return `<details class="card"><summary>＋ Create match</summary><div class="f">
+ <div><label>Title</label><input id="m_t" placeholder="Bermuda Full Map"></div>
+ <div><label>Category</label><select id="m_c"><option value="BR">Full map</option><option value="CS">Clash squad</option><option value="LW">Lone wolf</option><option value="C2">CS 1v1 / 2v2</option><option value="LT">Lost to Win</option><option value="SP">Special mode</option><option value="FR">Free match</option></select></div>
+ <div><label>Team type</label><select id="m_y"><option>Solo</option><option>Duo</option><option selected>Squad</option></select></div>
+ <div><label>Map</label><input id="m_m" value="Bermuda"></div>
+ <div><label>Entry fee ৳</label><input id="m_f" type="number" value="20"></div>
+ <div><label>Prize pool ৳</label><input id="m_p" type="number" value="500"></div>
+ <div><label>Per kill ৳</label><input id="m_k" type="number" value="0"></div>
+ <div><label>Slots</label><input id="m_s" type="number" value="48"></div>
+ <div><label>Start time</label><input id="m_d" type="datetime-local"></div></div><div class="f"><div><label>Short description</label><input id="m_e"></div><div><label>Prize pool details (one line per rank)</label><textarea id="m_o" rows="3" placeholder="1st = 500&#10;2nd = 300" style="width:100%;background:#10141c;border:1px solid var(--line);border-radius:9px;padding:10px;color:var(--tx);font:inherit"></textarea></div></div>
+ <button class="p" onclick="addM()">Create match</button></details>
+ <div class="card tbl"><table><tr><th>Match</th><th>Start</th><th>Fee / prize</th><th>Joined</th><th>Status</th><th></th></tr>
+ ${L.map(m=>`<tr><td><b>${esc(m.title)}</b><br><span class="sub">#${m.no||m.id} · ${m.cat} · ${esc(m.type)}</span></td><td>${fmt(m.start)}</td><td>৳${m.fee} / ৳${m.prize}</td><td>${m.joined.length}/${m.slots}</td>
+ <td><span class="tag ${m.status=='live'?'live':m.status=='completed'?'ok':''}">${m.status}</span></td>
+ <td><div class="acts"><button class="g" onclick="playersM(${m.id})">Players (${m.joined.length})</button><button class="g" onclick="roomM(${m.id})">Room</button>${m.status=='live'?`<button class="p" onclick="resM(${m.id})">Results</button>`:''}${m.status=='upcoming'?`<button class="g" onclick="cancelM(${m.id})">Cancel & refund</button>`:''}<button class="r" onclick="delM(${m.id})">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="sub">No matches yet.</td></tr>'}</table></div>`}
+function addM(){const v=i=>$('#'+i).value.trim(),n=i=>+v(i);if(!v('m_t')||!v('m_d')||!(n('m_s')>=2))return toast('Enter title, start time and slots');
+ d.mn=(d.mn||10)+1;d.matches.push({id:Date.now(),no:d.mn,desc:v('m_e'),pools:$('#m_o').value.trim(),title:v('m_t'),cat:v('m_c'),type:v('m_y'),map:v('m_m'),fee:n('m_f'),prize:n('m_p'),kill:n('m_k'),slots:n('m_s'),start:new Date(v('m_d')).getTime(),pl:[],joined:[],room:'',pass:'',status:'upcoming',results:[]});commit();toast('Match created')}
+function delM(id){if(!confirm('Delete this match? Entry fees will NOT be refunded unless you cancel first.'))return;d.matches=d.matches.filter(m=>m.id!=id);commit()}
+async function cancelM(id){const m0=d.matches.find(x=>x.id==id);if(!confirm(`Cancel and refund ${m0.joined.length} players?`))return;
+ try{await fs.runTransaction(async tr=>{const mr=fs.collection('matches').doc(String(id)),m=(await tr.get(mr)).data();if(m.status!='upcoming')throw Error('Match already started');
+  const ss=await Promise.all(m.joined.map(j=>tr.get(fs.collection('users').doc(String(j.uid)))));
+  ss.forEach(x=>{if(x.exists){const u=x.data();u.bal+=m.fee;addTx(u,'Refund: '+m.title,m.fee);tr.set(x.ref,u)}});tr.update(mr,{joined:[],pl:[],status:'completed'})});toast('Refunded')}catch(e){toast(e.message)}}
+function modal(h){const e=document.createElement('div');e.className='modal';e.id='modal';e.onclick=x=>{if(x.target==e)e.remove()};e.innerHTML=`<div class="sheet">${h}</div>`;$('#modal')?.remove();document.body.appendChild(e)}
+function playersM(id){const m=d.matches.find(x=>x.id==id);
+ modal(`<h2 class="hd">Players · ${esc(m.title)}</h2><p class="sub" style="margin:6px 0 12px">${m.joined.length}/${m.slots} joined</p>${m.joined.map((j,i)=>{const u=d.users.find(x=>x.id==j.uid);return `<div class="mrow" style="display:block"><b>${i+1}. ${esc(u?u.name:'')}</b> <span class="sub">${u?esc(u.phone):''}</span><div style="margin-top:4px">${(j.team&&j.team.length?j.team:[j]).map(p=>`${esc(p.ign)} · <b>${esc(p.ffuid)}</b>`).join('<br>')}</div></div>`}).join('')||'<div class="sub">No one has joined yet.</div>'}`)}
+function roomM(id){const m=d.matches.find(x=>x.id==id);
+ modal(`<h2 class="hd">Room details · ${esc(m.title)}</h2><p class="sub" style="margin:6px 0 14px">Saving makes the match live and shows the room to joined players.</p>
+ <label>Room ID</label><input id="r_i" value="${esc(m.room)}" style="margin-bottom:10px"><label>Password</label><input id="r_p" value="${esc(m.pass)}" style="margin-bottom:14px">
+ <button class="p" onclick="saveRoom(${id})">Save and go live</button>`)}
+function saveRoom(id){const r=$('#r_i').value.trim(),p=$('#r_p').value.trim();if(!r)return toast('Enter room ID');$('#modal').remove();upd('matches',id,{room:r,pass:p,status:'live'});toast('Match is live')}
+function resM(id){const m=d.matches.find(x=>x.id==id);
+ modal(`<h2 class="hd">Results · ${esc(m.title)}</h2><p class="sub" style="margin:6px 0 12px">Winnings = kills × ৳${m.kill} + position prize. Paid to wallets on save.</p>
+ <table><tr><th>Player</th><th>Kills</th><th>Position prize ৳</th></tr>${m.joined.map((j,i)=>`<tr><td>${(j.team&&j.team.length?j.team:[j]).map(p=>`${esc(p.ign)} <span class="sub">${esc(p.ffuid)}</span>`).join("<br>")}</td><td><input id="k${i}" type="number" value="0" style="width:80px"></td><td><input id="w${i}" type="number" value="0" style="width:110px"></td></tr>`).join('')}</table>
+ <button class="p" style="margin-top:14px" onclick="saveRes(${id})">Pay out and complete</button>`)}
+async function saveRes(id){const m0=d.matches.find(x=>x.id==id);if(!confirm('Pay winnings and mark completed?'))return;
+ const res=m0.joined.map((j,i)=>{const k=+$('#k'+i).value||0;return{uid:j.uid,ign:j.ign,kills:k,won:k*m0.kill+(+$('#w'+i).value||0)}}).filter(r=>r.won>0||r.kills>0).sort((a,b)=>b.won-a.won),pay=res.filter(r=>r.won>0);$('#modal').remove();
+ try{await fs.runTransaction(async tr=>{const mr=fs.collection('matches').doc(String(id)),m=(await tr.get(mr)).data();if(m.status!='live')throw Error('Not live or already completed');
+  const ss=await Promise.all(pay.map(r=>tr.get(fs.collection('users').doc(String(r.uid)))));
+  ss.forEach((x,i)=>{if(!x.exists)return;const u=x.data(),r=pay[i];u.bal+=r.won;addTx(u,'Won: '+m.title,r.won);tr.set(x.ref,u);tr.set(fs.collection('board').doc(String(u.id)),{ign:u.ign,won:F().increment(r.won)},{merge:true})});
+  tr.update(mr,{results:res,status:'completed'})});toast('Winnings paid')}catch(e){toast(e.message)}}
+function users(){const L=d.users.filter(u=>!q||[u.name,u.ign,u.uid,u.phone].join(' ').toLowerCase().includes(q.toLowerCase()));
+ return `<div class="card"><input placeholder="Search name, phone or UID" value="${esc(q)}" oninput="q=this.value;render();const i=document.querySelector('input');i.focus();i.setSelectionRange(99,99)"></div>
+ <div class="card tbl"><table><tr><th>Player</th><th>Phone</th><th>FF UID</th><th>Balance</th><th></th></tr>
+ ${L.map(u=>`<tr><td><b>${esc(u.name)}</b><br><span class="sub">${esc(u.ign)}</span></td><td>${esc(u.phone)}</td><td>${esc(u.uid)}</td><td>৳${u.bal}</td>
+ <td><div class="acts"><button class="g" onclick="adjust(${u.id})">Adjust balance</button><button class="${u.banned?'p':'r'}" onclick="ban(${u.id})">${u.banned?'Unban':'Ban'}</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="sub">No players found.</td></tr>'}</table></div>`}
+function adjust(id){const u=d.users.find(x=>x.id==id),a=prompt(`Add or remove balance for ${u.name}.\nUse a negative number to remove (e.g. -50).`);if(a===null||isNaN(+a)||+a==0)return;
+ userTx(id,x=>{x.bal+=+a;addTx(x,'Admin adjustment',+a)}).then(()=>toast('Balance updated'))}
+function ban(id){const u=d.users.find(x=>x.id==id);upd('users',id,{banned:!u.banned})}
+function money(){const row=(x,t)=>`<tr><td>${fmt(x.t)}</td><td>${esc(x.name)}</td><td>${esc(x.method)} ${esc(x.num)}</td>${t=='dep'?`<td>${esc(x.trx)}</td>`:''}<td><b>৳${x.amt}</b></td><td>${x.status=='pending'?`<div class="acts"><button class="p" onclick="act('${t}',${x.id},1)">${t=='dep'?'Approve':'Mark paid'}</button><button class="r" onclick="act('${t}',${x.id},0)">Reject</button></div>`:`<span class="tag ${x.status=='approved'?'ok':''}">${x.status}</span>`}</td></tr>`;
+ const s=a=>[...a].sort((p,q)=>(p.status=='pending'?0:1)-(q.status=='pending'?0:1)||q.t-p.t);
+ return `<h3 class="hd" style="margin:4px 0 8px;font-size:18px">Deposit requests</h3><div class="card tbl"><table><tr><th>Time</th><th>Player</th><th>Sent from</th><th>Trx ID</th><th>Amount</th><th></th></tr>${s(d.dep).map(x=>row(x,'dep')).join('')||'<tr><td colspan="6" class="sub">No deposit requests.</td></tr>'}</table></div>
+ <h3 class="hd" style="margin:4px 0 8px;font-size:18px">Withdrawal requests</h3><div class="card tbl"><table><tr><th>Time</th><th>Player</th><th>Send to</th><th>Amount</th><th></th></tr>${s(d.wd).map(x=>row(x,'wd')).join('')||'<tr><td colspan="5" class="sub">No withdrawal requests.</td></tr>'}</table></div>`}
+async function act(t,id,ok){try{await fs.runTransaction(async tr=>{const r=fs.collection(t).doc(String(id)),x=(await tr.get(r)).data();if(x.status!='pending')throw Error('Already handled');
+ const ur=fs.collection('users').doc(String(x.uid)),us=await tr.get(ur);
+ if(us.exists&&((t=='dep'&&ok)||(t=='wd'&&!ok))){const u=us.data();u.bal+=x.amt;addTx(u,t=='dep'?'Deposit approved':'Withdrawal rejected (refund)',x.amt);tr.set(ur,u)}
+ tr.update(r,{status:ok?'approved':'rejected'})});toast(ok?'Done':'Rejected')}catch(e){toast(e.message)}}
+function set(){return `<div class="card" style="max-width:460px"><h3 class="hd" style="font-size:18px;margin-bottom:10px">App settings</h3>
+ <label>bKash number</label><input id="s_b" value="${esc(d.cfg.bkash)}" style="margin-bottom:10px"><label>Nagad number</label><input id="s_n" value="${esc(d.cfg.nagad)}" style="margin-bottom:10px">
+ <label>Rocket number</label><input id="s_r" value="${esc(d.cfg.rocket||'')}" style="margin-bottom:10px"><label>Withdrawals allowed per day</label><input id="s_l" type="number" value="${d.cfg.limit||1}" style="margin-bottom:10px"><label>Support link (Telegram, WhatsApp, Messenger)</label><input id="s_s" value="${esc(d.cfg.support||'')}" style="margin-bottom:10px"><label>Developer profile text</label><input id="s_v" value="${esc(d.cfg.dev||'')}" style="margin-bottom:10px"><label>Rules (shown to players)</label><textarea id="s_u" rows="5" style="width:100%;background:#10141c;border:1px solid var(--line);border-radius:9px;padding:10px;color:var(--tx);font:inherit;margin-bottom:10px">${esc(d.cfg.rules||'')}</textarea>${[['BR','Full map'],['CS','Clash squad'],['C2','CS 1v1 / 2v2'],['LW','Lone wolf'],['LT','Lost to win'],['SP','Special mode'],['FR','Free match']].map(([k,l])=>`<label>${l} background image link (optional)</label><input id="bg_${k}" value="${esc((d.cfg.bg||{})[k]||'')}" placeholder="https://..." style="margin-bottom:10px">`).join('')}<label>Minimum withdrawal ৳</label><input id="s_m" type="number" value="${d.cfg.min}" style="margin-bottom:10px"><label>Admin password</label><input id="s_p" value="${esc(d.pass)}" style="margin-bottom:14px">
+ <button class="p" onclick="saveSet()">Save settings</button></div>`}
+function saveSet(){if(!$('#s_p').value.trim())return toast('Password cannot be empty');d.cfg={...d.cfg,bg:Object.fromEntries(['BR','CS','C2','LW','LT','SP','FR'].map(k=>[k,$('#bg_'+k).value.trim()])),bkash:$('#s_b').value.trim(),nagad:$('#s_n').value.trim(),rocket:$('#s_r').value.trim(),limit:+$('#s_l').value||1,support:$('#s_s').value.trim(),dev:$('#s_v').value.trim(),rules:$('#s_u').value.trim(),min:+$('#s_m').value||100};d.pass=$('#s_p').value.trim();commit();toast('Saved')}
+if(CLOUD)startCloud();else setTimeout(()=>toast('Firebase not connected: data stays on this device'),900);
+render();
+addEventListener('storage',e=>{if(e.key==K&&!$('#modal')&&!document.activeElement?.matches('input,select'))render()});
+</script></body></html>
