@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ortune Tour – Free Fire Tournaments</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest-user.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#070b16">
+<link rel="icon" href="icon-192.png">
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#070b16;--card:#101828;--line:#1d2a42;--ac:#18b8ff;--ac2:#7de3ff;--tx:#eef1f6;--mut:#8b95a7;--ok:#3ecf8e;--bad:#ff5d5d;--in:#0b1220;--chip:#17233a;--nav:#0c1424;color-scheme:dark}
+[data-theme=light]{--bg:#f3f5f9;--card:#fff;--line:#dfe3ea;--tx:#161a22;--mut:#6b7587;--in:#f3f5f9;--chip:#eceff5;--nav:#fff;--ac2:#0a6fa8;color-scheme:light}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{max-width:520px;margin:auto;min-height:100vh;padding:0 14px 90px}
+h1,h2,h3,.hd{font-family:Rajdhani,system-ui,sans-serif;font-weight:700;letter-spacing:.3px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 0 10px;position:sticky;top:0;background:var(--bg);z-index:5}
+.logo{font-size:24px;color:var(--ac)}
+.bal{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-weight:600;color:var(--ac2)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px}
+.chip{flex:none;padding:7px 14px;border-radius:18px;border:1px solid var(--line);background:none;color:var(--mut);font:inherit;cursor:pointer}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#1a0f05;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tag{font-size:12px;padding:2px 8px;border-radius:6px;background:var(--chip);color:var(--ac2)}
+.sub{color:var(--mut);font-size:13px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;text-align:center}
+.g3>div{background:var(--in);border:1px solid var(--line);border-radius:10px;padding:8px 4px}
+.g3 small{display:block;color:var(--mut);font-size:11px}.g3 b{font-size:16px}
+.bar{height:6px;background:var(--chip);border-radius:3px;overflow:hidden;margin:10px 0 8px}.bar i{display:block;height:100%;background:var(--ac)}
+button.p{background:linear-gradient(90deg,var(--ac2),var(--ac));color:#1a0f05;border:0;border-radius:9px;padding:9px 20px;font:600 14px inherit;cursor:pointer}
+button.p:disabled{background:var(--chip);color:var(--mut)}
+button.g{background:none;border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 12px;font:inherit;cursor:pointer}
+input,select,textarea{width:100%;background:var(--in);border:1px solid var(--line);border-radius:9px;padding:11px;color:var(--tx);font:inherit;margin:5px 0 10px}
+label{font-size:13px;color:var(--mut)}
+.cd{margin-top:10px;text-align:center;font-weight:700;padding:9px;border-radius:10px;background:linear-gradient(90deg,#e8365d,#ff6a3d);color:#fff;letter-spacing:.5px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer}
+.ban{height:122px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:10px}
+.bd{position:absolute;top:8px;right:8px;background:#e8368f;color:#fff;font:700 11px system-ui;padding:3px 9px;border-radius:12px;z-index:2}
+.bt{font:italic 700 27px/1 Rajdhani,sans-serif;color:#fff;text-shadow:0 2px 0 #0007;text-transform:uppercase;position:relative;z-index:1}
+.art{position:absolute;inset:0;width:100%;height:100%}.bi{position:absolute;right:-8px;top:14px;opacity:.3;transform:rotate(-12deg)}
+.tb{padding:10px 12px 12px}.tb b{font-size:15px;display:block}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cat{border-radius:14px;padding:14px 12px 12px;color:#fff;cursor:pointer;border:0;text-align:left;font:inherit}
+.cat b{display:block;font:700 18px Rajdhani,sans-serif}.cat span{font-size:12px;opacity:.85}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0)}
+nav div{display:flex;width:100%;max-width:520px}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:12px 0;font:inherit;font-size:13px;cursor:pointer}
+nav button.on{color:var(--ac)}
+.modal{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:520px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px;border:1px solid var(--line)}
+.room{background:var(--in);border:1px dashed var(--ac);border-radius:10px;padding:12px;margin:12px 0}
+.room b{color:var(--ac2);font-size:18px;user-select:all}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:10px;display:none;z-index:30;max-width:90%}
+.auth{padding-top:12vh}.auth h1{font-size:40px;color:var(--ac)}
+.empty{text-align:center;color:var(--mut);padding:40px 0}
+.pm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pm button{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:12px 4px;color:var(--tx);font:600 14px inherit;cursor:pointer}
+.pm button.on{border-color:var(--ac);background:var(--chip)}
+.hero{background:linear-gradient(135deg,#1c4a7a,#0f2a4a);color:#fff;border-radius:14px;padding:18px;text-align:center;margin-bottom:12px}
+.av{width:64px;height:64px;border-radius:50%;background:var(--ac);color:#1a0f05;font:700 28px Rajdhani,sans-serif;display:grid;place-items:center;margin:0 auto 6px}
+.menu{padding:0}.menu .m{display:flex;justify-content:space-between;padding:15px 14px;border-bottom:1px solid var(--line);cursor:pointer}.menu .m:last-child{border:0}
+.fab{position:fixed;right:16px;bottom:78px;width:50px;height:50px;border-radius:50%;border:0;background:var(--ac2);font-size:22px;cursor:pointer;z-index:9}
+pre{white-space:pre-wrap;font:inherit}
+</style></head><body>
+<div id="app"></div><div id="toast"></div>
+<script>
+const logo=(s=28)=>`<img src="icon-192.png" width="${s}" height="${s}" style="border-radius:22%;object-fit:cover" alt="Ortune Tour">`;
+const K='ffx_db',$=s=>document.querySelector(s),
+esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+fmt=t=>new Date(t).toLocaleString([],{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+function seed(){const t=Date.now(),h=36e5,m=(no,title,cat,type,map,fee,prize,kill,slots,dt,desc,pools)=>({id:no,no,title,cat,type,map,fee,prize,kill,slots,start:t+dt*h,desc,pools,joined:[],room:'',pass:'',status:'upcoming',results:[]});
+const d={users:[],dep:[],wd:[],n:10,mn:100,pass:'admin123',cfg:{},
+matches:[m(1,'Bermuda Full Map Squad','BR','Squad','Bermuda',50,1000,10,48,3,'Full map squad match. Play fair.','1st = 500\n2nd = 300\n3rd = 200'),m(2,'Clash Squad 4v4','CS','Squad','Bermuda',30,200,0,8,5,'4v4 clash squad.','Winner team = 200'),m(3,'Lone Wolf 1v1','LW','Solo','Lone Wolf',20,35,0,2,2,'','Winner = 35'),m(4,'Free Match Giveaway','FR','Solo','Bermuda',0,200,0,100,24,'Free match. Room ID is given in the app.','1st = 200'),m(5,'One Taka Special','SP','Solo','Bermuda',1,100,0,48,30,'Special mode for ৳1.','1st = 100')]};
+save(d);return d}
+const CFG=window.FIREBASE_CONFIG,CLOUD=!!(CFG&&CFG.projectId&&window.firebase);
+let refBusy=false,DB={users:[],matches:[],dep:[],wd:[],cfg:{},board:[],news:[]},ready=false,waiting=false,fs,unsubs=[];
+const src={active:[],done:[],mine:[]},doneLoaded=new Set(),load=()=>DB;
+const sha=async x=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(x)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+function mergeM(){const mp=new Map();[...src.active,...src.done,...src.mine].forEach(m=>mp.set(m.id,m));DB.matches=[...mp.values()];render()}
+function startCloud(){firebase.initializeApp(CFG);fs=firebase.firestore();
+ fs.collection('meta').doc('main').onSnapshot(x=>{DB.cfg=(x.exists&&x.data().cfg)||{};ready=true;render()},e=>toast(e.message));
+ fs.collection('matches').where('status','in',['upcoming','live']).onSnapshot(x=>{src.active=x.docs.map(y=>y.data());mergeM()},e=>toast(e.message));
+ fs.collection('news').orderBy('t','desc').limit(5).onSnapshot(x=>{DB.news=x.docs.map(y=>y.data());render()},e=>toast(e.message));
+ if(localStorage.ffx_sid)watchUser(localStorage.ffx_sid)}
+function watchUser(id){unsubs.forEach(f=>f());unsubs=[];const n=+id;waiting=true;
+ unsubs.push(fs.collection('users').doc(String(n)).onSnapshot(x=>{waiting=false;if(!x.exists){delete localStorage.ffx_sid;DB.users=[]}else{DB.users=[x.data()];if(!x.data().ref&&!refBusy){refBusy=true;newRef().then(c=>x.ref.update({ref:c}))}}render()},e=>toast(e.message)));
+ unsubs.push(fs.collection('dep').where('uid','==',n).onSnapshot(x=>{DB.dep=x.docs.map(y=>y.data());render()}));
+ unsubs.push(fs.collection('wd').where('uid','==',n).onSnapshot(x=>{DB.wd=x.docs.map(y=>y.data());render()}));
+ unsubs.push(fs.collection('matches').where('pl','array-contains',n).onSnapshot(x=>{src.mine=x.docs.map(y=>y.data());mergeM()}))}
+function logout(){unsubs.forEach(f=>f());unsubs=[];delete localStorage.ffx_sid;DB.users=[];DB.dep=[];DB.wd=[];src.mine=[];tab='home';cat=null;mergeM()}
+function loadDone(){if(!CLOUD||st!='completed'||!cat||doneLoaded.has(cat))return;doneLoaded.add(cat);fs.collection('matches').where('cat','==',cat).where('status','==','completed').limit(30).get().then(x=>{src.done=[...src.done,...x.docs.map(y=>y.data())];mergeM()})}
+function loadBoard(){fs.collection('board').orderBy('won','desc').limit(20).get().then(x=>{DB.board=x.docs.map(y=>y.data());render()})}
+async function newRef(){for(let i=0;i<6;i++){const c=Math.random().toString(36).slice(2,8).toUpperCase();if(c.length==6&&(await fs.collection('users').where('ref','==',c).limit(1).get()).empty)return c}return String(Date.now()).slice(-6)}
+async function img2data(file,max,q,sq){const b=await createImageBitmap(file),c=document.createElement('canvas'),x=c.getContext('2d');
+ if(sq){const m=Math.min(b.width,b.height);c.width=c.height=max;x.drawImage(b,(b.width-m)/2,(b.height-m)/2,m,m,0,0,max,max)}else{const k=Math.min(1,max/Math.max(b.width,b.height));c.width=Math.round(b.width*k);c.height=Math.round(b.height*k);x.drawImage(b,0,0,c.width,c.height)}
+ return c.toDataURL('image/jpeg',q)}
+async function setPhoto(el){sync();const f=el.files[0];if(!f)return;const p=await img2data(f,128,.7,1);await fs.collection('users').doc(String(me.id)).update({photo:p});fs.collection('board').doc(String(me.id)).set({photo:p,ign:me.ign},{merge:true});toast('Photo updated')}
+function shareRef(){const t=`Join Ortune Tour! Use my referral code ${me.ref} when you sign up: ${location.origin}${location.pathname}`;if(navigator.share)navigator.share({text:t});else{navigator.clipboard?.writeText(t);toast('Referral message copied')}}
+function newsBox(){return (DB.news||[]).slice(0,3).map(n=>`<div class="card" style="border-color:var(--ac)"><div class="row"><b>📢 ${esc(n.title)}</b><span class="sub">${fmt(n.t)}</span></div><div class="sub" style="margin-top:6px;color:var(--tx);white-space:pre-wrap">${esc(n.body)}</div></div>`).join('')}
+async function proofM(id){sync();const m=DB.matches.find(x=>x.id==id),old=await fs.collection('proofs').doc(id+'_'+me.id).get();
+ modal(`<h2 class="hd">Result screenshot · ${esc(m.title)}</h2><p class="sub">Upload a clear screenshot of your match result (kills and position). The admin uses it to check your winnings.</p>${old.exists?`<div class="room"><div class="sub">Already submitted ${fmt(old.data().t)}. Sending a new one replaces it.</div><img src="${old.data().img}" style="width:100%;border-radius:8px;margin-top:8px"></div>`:''}<label>Screenshot</label><input id="p_f" type="file" accept="image/*"><label>Note (optional)</label><input id="p_n" placeholder="e.g. 5 kills, Booyah"><button class="p" style="width:100%" onclick="sendProof(${id})">Submit</button>`)}
+async function sendProof(id){sync();const f=$('#p_f').files[0];if(!f)return toast('Choose a screenshot');const img=await img2data(f,900,.6);
+ await fs.collection('proofs').doc(id+'_'+me.id).set({id:id+'_'+me.id,mid:id,uid:me.id,ign:me.ign,note:$('#p_n').value.trim(),img,t:Date.now()});$('#modal')?.remove();toast('Screenshot submitted')}
+const C=()=>({bkash:'01XXXXXXXXX',nagad:'01XXXXXXXXX',rocket:'01XXXXXXXXX',min:100,limit:1,support:'',dev:'',rules:'1. Use your real Free Fire name and UID.\n2. No hacking, teaming or emulator cheating. Cheaters are banned.\n3. Join the room before the match starts. Late players cannot get a refund.\n4. Prizes are paid to your wallet after the match is checked.',...d.cfg});
+const rulesFor=k=>(((C().rulesBy||{})[k])||'').trim()||C().rules;
+const addTx=(u,txt,amt)=>{u.tx=u.tx||[];u.tx.unshift({t:Date.now(),txt,amt});if(u.tx.length>50)u.tx.length=50};
+const CATS=[['BR','Full Map','#ff7a1a,#9c2a12','BR','Full Map'],['CS','Clash Squad','#3a7bd5,#1b2a6b','CS','Clash Squad'],['C2','CS 1v1 / 2v2','#2bb3c0,#14465a','CS','1v1 · 2v2'],['LW','Lone Wolf','#9b59b6,#2c1654','LW','Lone Wolf King'],['LT','Lost to Win','#f4b400,#7a3b00','LTW','Lost to Win'],['SP','Special Mode','#e91e8c,#5a1440','SPECIAL MODE','৳1 Special'],['FR','Free Match','#2ecc71,#0b5a3d','FREE','Free Match Giveaway']];
+const IC={BR:'<path d="M32 56C20 42 14 34 14 26a18 18 0 0136 0c0 8-6 16-18 30z"/><circle cx="32" cy="26" r="6"/>',CS:'<path d="M14 14L44 44M50 14L20 44M40 48l8-8M24 48l-8-8M46 46l6 6M18 46l-6 6"/>',LW:'<path d="M10 12l14 10h16l14-10 2 24-24 22L8 36z"/><circle cx="24" cy="36" r="2.5" fill="#fff"/><circle cx="40" cy="36" r="2.5" fill="#fff"/>',SP:'<path d="M32 8l7.5 15.5 17 2.4-12.3 12 2.9 17L32 46.8 16.9 54.9l2.9-17-12.3-12 17-2.4z"/>',FR:'<rect x="10" y="26" width="44" height="28" rx="3"/><path d="M8 18h48v8H8zM32 18v36M32 18c-6-10-18-8-14 0M32 18c6-10 18-8 14 0"/>'};
+const rays=n=>Array.from({length:n},(_,i)=>{const a=i*2*Math.PI/n,b=(i+.5)*2*Math.PI/n;return `<path d="M100 61L${100+300*Math.cos(a)} ${61+300*Math.sin(a)}L${100+300*Math.cos(b)} ${61+300*Math.sin(b)}z" fill="#fff" opacity=".14"/>`}).join('');
+const dots=(n,c)=>Array.from({length:n},(_,i)=>`<circle cx="${(i*47+13)%200}" cy="${(i*31+9)%110}" r="${2+i%3}" fill="${c}" opacity=".6"/>`).join('');
+const BG={BR:'<circle cx="150" cy="30" r="16" fill="#ffe08a"/><path d="M0 90L40 50 70 80 110 40 160 85 200 60V122H0z" fill="#0004"/><path d="M0 108L50 78 90 102 140 72 200 106V122H0z" fill="#0007"/><path d="M40 20l6 10h-12zM46 30v8" stroke="#fff" fill="#fff8" stroke-width="1.5"/>',
+CS:'<path d="M0 122V70h18V50h22v30h14V40h26v40h16V60h24v20h18V45h28v77z" fill="#0005"/><path d="M0 122V92h30V72h20v20h20V82h30v40z" fill="#0008"/><path d="M130 0L100 122" stroke="#fff6" stroke-width="2"/>',
+C2:'<path d="M0 0h130L70 122H0z" fill="#0004"/><circle cx="150" cy="50" r="26" fill="none" stroke="#fff6" stroke-width="3"/><path d="M150 14v72M114 50h72" stroke="#fff6" stroke-width="2"/>',
+LW:'<circle cx="150" cy="32" r="18" fill="#fff6c8"/>'+dots(10,'#fff')+'<path d="M0 122V98q40-24 80-4t120-14v42z" fill="#000a"/><path d="M24 100l8-34 8 34zM46 102l10-40 10 40zM168 94l9-36 9 36z" fill="#000b"/>',
+LT:rays(14)+'<circle cx="100" cy="61" r="30" fill="#fff" opacity=".18"/>',
+SP:rays(10)+dots(9,'#ffd6ec'),
+FR:dots(16,'#fff')+'<circle cx="160" cy="30" r="30" fill="#fff" opacity=".12"/><circle cx="30" cy="100" r="36" fill="#000" opacity=".15"/>'};
+BG.C2=BG.C2;
+IC.C2=IC.CS;IC.LT='<path d="M20 10h24v14a12 12 0 01-24 0zM20 14h-8c0 10 4 14 10 14M44 14h8c0 10-4 14-10 14M32 36v10M22 54h20M26 46h12"/>';
+const ico=(k,s=28)=>`<span style="display:inline-grid;place-items:center;flex:none;width:${s}px;height:${s}px;border-radius:${Math.round(s/3)}px;background:linear-gradient(160deg,${(CATS.find(x=>x[0]==k)||[0,0,'#ff7a1a,#9c2a12'])[2]})"><svg width="${Math.round(s*.64)}" height="${Math.round(s*.64)}" viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">${IC[k]||''}</svg></span>`;
+let d,me,tab='home',cat=null,st='upcoming',mode='login',wm='bKash';
+document.documentElement.dataset.theme=localStorage.ffx_theme||'dark';
+const toast=m=>{const e=$('#toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2600)};
+const sync=()=>{d=load();me=d.users.find(u=>u.id==localStorage.ffx_sid)};
+const go=(t,c)=>{tab=t;if(c!==undefined)cat=c;if(t=='top')loadBoard();loadDone();render();scrollTo(0,0)};
+const won=uid=>d.matches.flatMap(m=>m.results).filter(r=>r.uid==uid).reduce((s,r)=>s+r.won,0);
+const played=uid=>d.matches.filter(m=>m.joined.some(x=>x.uid==uid)).length;
+
+function render(){if(!CLOUD)return $('#app').innerHTML='<div style="padding:30vh 20px;text-align:center;color:#8b95a7">Open this app from your website link.</div>';if(!ready||waiting)return $('#app').innerHTML='<div style="padding:40vh 0;text-align:center;color:#8b95a7">Loading…</div>';sync();if(!localStorage.ffx_sid&&document.activeElement?.matches&&document.activeElement.matches('input'))return;if(!me)return auth();
+ const P={home,mine,wallet,withdraw,profile,mp,rules,top:topP},sub=['wallet','withdraw','mp','rules','top'].includes(tab),nk={wallet:'profile',withdraw:'profile',mp:'profile',rules:'profile',top:'profile'}[tab]||tab;
+ $('#app').innerHTML=`<div class="top"><span class="logo hd" style="display:flex;align-items:center;gap:8px">${logo(30)}ORTUNE TOUR</span><span class="bal" style="cursor:pointer" onclick="go('wallet')">৳ ${me.bal}</span></div>
+ ${sub?`<button class="g" style="margin-bottom:12px" onclick="go('${tab=='withdraw'?'wallet':'profile'}')">‹ Back</button>`:''}${P[tab]()}
+ <button class="fab" onclick="support()">🎧</button>
+ <nav><div>${[['home','🏠 Home'],['mine','🎮 My matches'],['profile','👤 Profile']].map(([k,l])=>`<button class="${nk==k?'on':''}" onclick="go('${k}',null)">${l}</button>`).join('')}</div></nav>`;tick()}
+function support(){const s=C().support;s?open(s,'_blank'):toast('Support link is not set yet')}
+
+function auth(){const r=mode=='reg';
+ $('#app').innerHTML=`<div class="auth"><img src="logo-wide.jpg" style="width:100%;max-width:340px;display:block;margin:0 0 12px" alt="Ortune Tour"><p class="sub" style="margin-bottom:22px">Free Fire tournaments. Join, play, win.</p>
+ ${r?`<label>Your name</label><input id="a_n"><label>Free Fire in-game name</label><input id="a_i"><label>Free Fire UID</label><input id="a_u" inputmode="numeric"><label>Referral code (optional)</label><input id="a_r" autocapitalize="characters">`:''}
+ <label>Phone number</label><input id="a_p" inputmode="tel"><label>Password</label><input id="a_w" type="password">
+ <button class="p" style="width:100%" onclick="doAuth()">${r?'Create account':'Log in'}</button>
+ <p class="sub" style="text-align:center;margin-top:16px">${r?'Have an account?':'New here?'} <a href="#" style="color:var(--ac)" onclick="mode='${r?'login':'reg'}';auth();return false">${r?'Log in':'Register'}</a></p></div>`}
+async function doAuth(){const v=i=>($('#'+i)?.value||'').trim(),p=v('a_p'),w=v('a_w');if(!p||!w)return toast('Enter phone and password');
+ const h=await sha(p+':'+w),q=await fs.collection('users').where('phone','==',p).limit(1).get();
+ if(mode=='reg'){if(!v('a_n')||!v('a_i')||!v('a_u'))return toast('Fill in all fields');if(!q.empty)return toast('This phone number is already registered');
+  let rb=null;const rc=v('a_r').toUpperCase();if(rc){const rq=await fs.collection('users').where('ref','==',rc).limit(1).get();if(rq.empty)return toast('Invalid referral code');rb=rq.docs[0].data().id}
+  const id=Date.now()*1000+Math.floor(Math.random()*1000);await fs.collection('users').doc(String(id)).set({id,name:v('a_n'),ign:v('a_i'),uid:v('a_u'),phone:p,pw:h,bal:0,banned:false,tx:[],ref:await newRef(),refBy:rb});localStorage.ffx_sid=id;tab='home';watchUser(id);return}
+ const u=q.empty?null:q.docs[0].data();if(!u||(u.pw!=h&&u.pw!=w))return toast('Wrong phone or password');if(u.banned)return toast('This account is banned');localStorage.ffx_sid=u.id;watchUser(u.id)}
+function home(){
+ if(!cat)return newsBox()+`<div class="cats">${CATS.map(([k,l,c,bd,bt])=>{const n=d.matches.filter(m=>m.cat==k&&m.status!='completed').length,u=(C().bg||{})[k],ok=/^(https?:|data:image\/)/.test(u||'');return `<div class="tile" onclick="go('home','${k}')"><div class="ban" style="${ok?`background:linear-gradient(0deg,#000b,#0000 65%),url('${esc(u)}') center/cover`:`background:linear-gradient(160deg,${c})`}"><span class="bd">${bd}</span>${ok?'':`<svg class="art" viewBox="0 0 200 122" preserveAspectRatio="xMidYMid slice">${BG[k]}</svg><div class="bi">${ico(k,92)}</div>`}<div class="bt">${bt}</div></div><div class="tb"><b>${l}</b><div class="sub">${n} matches found</div></div></div>`}).join('')}</div>`;
+ const L=d.matches.filter(m=>m.cat==cat&&m.status==st).sort((a,b)=>a.start-b.start);
+ return `<div class="row" style="margin-bottom:8px"><button class="g" onclick="go('home',null)">‹</button><h2 class="hd" style="display:flex;align-items:center;gap:8px">${ico(cat,30)}${CATS.find(c=>c[0]==cat)[1]}</h2><span></span></div>
+ <div class="chips">${['upcoming','live','completed'].map(s=>`<button class="chip ${st==s?'on':''}" onclick="st='${s}';loadDone();render()">${s[0].toUpperCase()+s.slice(1)}</button>`).join('')}</div>
+ ${L.map(card).join('')||`<div class="empty">No ${st} matches here yet.<br>Check back soon.</div>`}`}
+function card(m){const j=m.joined.some(x=>x.uid==me.id),left=m.slots-m.joined.length;
+ return `<div class="card"><div class="row"><span style="display:flex;align-items:center;gap:10px">${ico(m.cat,34)}<b class="hd" style="font-size:18px">${esc(m.title)}</b></span><span class="tag">#${m.no||m.id}</span></div>
+ <div class="sub">${fmt(m.start)}</div>${m.desc?`<div class="sub" style="margin-top:4px">${esc(m.desc)}</div>`:''}
+ <div class="g3"><div><small>WIN PRIZE</small><b style="color:var(--ac2)">${m.prize} TK</b></div><div><small>PER KILL</small><b>${m.kill} TK</b></div><div><small>ENTRY FEE</small><b>${m.fee} TK</b></div></div>
+ <div class="row sub"><span>${esc(m.type)}</span><span>${esc(m.map)}</span><span>MOBILE</span></div>
+ <div class="bar"><i style="width:${m.joined.length/m.slots*100}%"></i></div>
+ <div class="row"><span class="sub">${left>0?`Only ${left} spots left`:'Match is full'}</span><b>${m.joined.length}/${m.slots}</b>
+ <button class="p" ${j||left<1||m.status!='upcoming'?'disabled':''} onclick="join(${m.id})">${j?'Joined':left<1?'Full':m.status!='upcoming'?'Closed':'Join'}</button></div>
+ <div class="row" style="margin-top:10px"><button class="g" style="flex:1" onclick="roomM(${m.id})">🔑 Room Details</button><button class="g" style="flex:1" onclick="prizeM(${m.id})">🏆 Prize Pool</button></div>
+ ${j&&m.status!='upcoming'?`<button class="g" style="width:100%;margin-top:8px" onclick="proofM(${m.id})">📸 Submit result screenshot</button>`:''}<div class="cd" data-i="${m.id}"></div></div>`}
+function tick(){document.querySelectorAll('.cd').forEach(e=>{const m=d?.matches.find(x=>x.id==e.dataset.i);if(!m)return;
+ if(m.status!='upcoming'){e.textContent=m.status=='live'?'● LIVE NOW':'COMPLETED';return}
+ const s=Math.max(0,Math.floor((m.start-Date.now())/1e3)),D=Math.floor(s/86400),H=Math.floor(s%86400/3600),M=Math.floor(s%3600/60);
+ e.textContent='STARTS IN '+(D?D+'d ':'')+H+'h:'+String(M).padStart(2,'0')+'m:'+String(s%60).padStart(2,'0')+'s'})}
+setInterval(tick,1000);
+
+function join(id){sync();const m=DB.matches.find(x=>x.id==id);if(!m)return;
+ if(me.bal<m.fee){toast('Not enough balance. Add money first.');return go('wallet')}
+ const n={Solo:1,Duo:2,Squad:4}[m.type]||1;
+ modal(`<h2 class="hd">Join: ${esc(m.title)}</h2><p class="sub">Entry fee ৳${m.fee}. Enter the exact Free Fire name and UID of every player. Wrong details can get you removed without a refund.</p><br>${Array.from({length:n},(_,i)=>`<label>Player ${i+1} in-game name</label><input id="j_n${i}" value="${i?'':esc(me.ign)}"><label>Player ${i+1} Free Fire UID</label><input id="j_u${i}" inputmode="numeric" value="${i?'':esc(me.uid)}">`).join('')}<h3 class="hd" style="margin:6px 0 6px">Rules</h3><div class="room" style="max-height:200px;overflow:auto;margin-top:0"><pre>${esc(rulesFor(m.cat))}</pre></div><label style="display:flex;gap:10px;align-items:center;margin:12px 0"><input id="j_ok" type="checkbox" style="width:22px;margin:0"> I have read and accept the rules</label><button class="p" style="width:100%" onclick="doJoin(${id},${n})">Pay ৳${m.fee} and join</button>`,1)}
+async function doJoin(id,n){sync();const team=[];
+ for(let i=0;i<n;i++){const g=$('#j_n'+i).value.trim(),u=$('#j_u'+i).value.trim();if(!g)return toast('Enter the in-game name of player '+(i+1));if(!/^\d{6,15}$/.test(u))return toast('Enter a valid Free Fire UID for player '+(i+1));team.push({ign:g,ffuid:u})}
+ if(new Set(team.map(x=>x.ffuid)).size<n)return toast('Each player needs a different UID');if(!$('#j_ok').checked)return toast('Please accept the rules to join');
+ const mr=fs.collection('matches').doc(String(id)),ur=fs.collection('users').doc(String(me.id)),br=fs.collection('board').doc(String(me.id)),F=firebase.firestore.FieldValue;
+ try{await fs.runTransaction(async t=>{const m=(await t.get(mr)).data(),u=(await t.get(ur)).data();
+  if(m.status!='upcoming')throw Error('Registration is closed');if(m.joined.some(x=>x.uid==u.id))throw Error('You already joined');if(m.joined.length>=m.slots)throw Error('Match is full');if(u.bal<m.fee)throw Error('Not enough balance');if(u.banned)throw Error('Account is banned');
+  const used=new Set(m.joined.flatMap(x=>(x.team||[x]).map(p=>p.ffuid)));if(team.some(p=>used.has(p.ffuid)))throw Error('One of these UIDs is already registered in this match');
+  u.bal-=m.fee;addTx(u,'Joined: '+m.title,-m.fee);m.joined.push({uid:u.id,ign:team[0].ign,ffuid:team[0].ffuid,team});m.pl=[...(m.pl||[]),u.id];
+  t.set(ur,u);t.set(mr,m);t.set(br,{ign:u.ign,played:F.increment(1)},{merge:true})});$('#modal')?.remove();toast('Joined! Tap Room Details before the match.')}catch(e){toast(e.message)}}
+function modal(h,full){const e=document.createElement('div');e.className='modal';e.id='modal';e.onclick=x=>{if(x.target==e)e.remove()};e.innerHTML=`<div class="sheet"${full?' style="height:100vh;max-height:100vh;border-radius:0;padding-bottom:70px"':''}><div class="row"><span></span><button class="g" onclick="$('#modal').remove()">Close</button></div>${h}</div>`;$('#modal')?.remove();document.body.appendChild(e)}
+function roomM(id){sync();const m=d.matches.find(x=>x.id==id),j=m.joined.some(x=>x.uid==me.id);
+ modal(`<h2 class="hd">${esc(m.title)}</h2>${j?(m.room?`<div class="room"><div class="sub">Room ID</div><b>${esc(m.room)}</b><div class="sub" style="margin-top:8px">Password</div><b>${esc(m.pass)}</b></div>`:'<div class="room sub">Room ID and password will show here about 15 minutes before start.</div>'):'<div class="room sub">Join this match to see the room ID and password.</div>'}
+ <h3 class="hd" style="margin:14px 0 6px">Players (${m.joined.length})</h3>${m.joined.map((x,i)=>`<div class="sub">${i+1}. ${esc(x.ign)}</div>`).join('')||'<div class="sub">No one has joined yet.</div>'}`)}
+function prizeM(id){const m=d.matches.find(x=>x.id==id);
+ modal(`<h2 class="hd">Prize pool · ${esc(m.title)}</h2><div class="room"><pre>${esc(m.pools||'Win prize ৳'+m.prize)}</pre></div><div class="sub">Per kill: ৳${m.kill}</div>
+ ${m.status=='completed'&&m.results.length?`<h3 class="hd" style="margin:14px 0 6px">Results</h3><table><tr><th>Player</th><th>Kills</th><th>Won</th></tr>${m.results.map(r=>`<tr><td>${esc(r.ign)}</td><td>${r.kills}</td><td class="pos">৳${r.won}</td></tr>`).join('')}</table>`:''}`)}
+
+function mine(){const L=d.matches.filter(m=>m.joined.some(x=>x.uid==me.id)).sort((a,b)=>b.start-a.start);
+ return `<h2 class="hd" style="margin:6px 0 12px">My matches</h2>${L.map(card).join('')||'<div class="empty">You have not joined any match yet.</div>'}`}
+
+function hero(){return `<div class="hero"><div class="row" style="margin-bottom:8px">${logo(30)}<span class="sub" style="color:#cfe">WALLET</span></div><div class="sub" style="color:#cfe">Available balance</div><div class="hd" style="font-size:38px">BDT ${me.bal}</div></div>`}
+function wallet(){const c=C(),tx=(me.tx||[]).slice(0,30),pend=d.dep.filter(x=>x.uid==me.id&&x.status=='pending').length;
+ return `${hero()}<button class="g" style="width:100%;margin-bottom:12px" onclick="go('withdraw')">Withdraw money ›</button>
+ <div class="card"><h3 class="hd" style="margin-bottom:6px">Add money</h3><p class="sub">Use Send Money to bKash <b>${esc(c.bkash)}</b>, Nagad <b>${esc(c.nagad)}</b> or Rocket <b>${esc(c.rocket)}</b>. Then enter the details below. Admin adds it after checking.</p><br>
+ <label>Method</label><select id="d_m"><option>bKash</option><option>Nagad</option><option>Rocket</option></select>
+ <label>Amount (৳)</label><input id="d_a" type="number" min="10"><label>Your sending number</label><input id="d_n" inputmode="tel"><label>Transaction ID</label><input id="d_t">
+ <button class="p" style="width:100%" onclick="deposit()">Submit request</button>${pend?`<p class="sub" style="margin-top:10px">${pend} request waiting for approval.</p>`:''}</div>
+ <h3 class="hd" style="margin:16px 0 6px">History</h3><div class="card">${tx.map(t=>`<div class="row" style="padding:6px 0"><span>${esc(t.txt)}<br><small class="sub">${fmt(t.t)}</small></span><b class="${t.amt>0?'pos':'neg'}">${t.amt>0?'+':''}${t.amt}</b></div>`).join('')||'<div class="sub">No transactions yet.</div>'}</div>`}
+async function deposit(){sync();const a=+$('#d_a').value,n=$('#d_n').value.trim(),t=$('#d_t').value.trim();
+ if(!(a>=10)||!n||!t)return toast('Enter amount, number and transaction ID');
+ const dup=await fs.collection('dep').where('trx','==',t).limit(1).get();if(!dup.empty)return toast('This transaction ID was already used');
+ const id=Date.now();await fs.collection('dep').doc(String(id)).set({id,uid:me.id,name:me.name,method:$('#d_m').value,amt:a,num:n,trx:t,status:'pending',t:id});toast('Request sent. Waiting for admin approval.')}
+function withdraw(){const c=C(),used=d.wd.filter(x=>x.uid==me.id&&new Date(x.t).toDateString()==new Date().toDateString()).length,left=Math.max(0,c.limit-used);
+ return `${hero()}<div class="card" style="background:linear-gradient(135deg,#1f6f78,#2a9d8f);color:#fff;border:0"><b>Today's withdrawal limit</b><div style="font-size:13px;margin-top:2px">${left?`You can withdraw ${left} more time${left>1?'s':''} today`:'You reached today\'s limit. Try again tomorrow.'}</div>
+ <div class="g3" style="color:var(--tx)"><div><b style="color:var(--ac2)">${left}</b><small>Left</small></div><div><b>${used}</b><small>Used</small></div><div><b>${c.limit}</b><small>Per day</small></div></div><div style="font-size:13px">Minimum withdraw: ৳${c.min}</div></div>
+ <h3 class="hd" style="margin:4px 0 8px">Select payment method</h3><div class="pm">${['bKash','Nagad','Rocket'].map(x=>`<button class="${wm==x?'on':''}" onclick="wm='${x}';render()">${x}</button>`).join('')}</div>
+ <h3 class="hd" style="margin-bottom:4px">Withdrawal details</h3><input id="x_n" inputmode="tel" placeholder="Mobile number" value="${esc(me.phone)}"><input id="x_a" type="number" placeholder="Amount to withdraw">
+ <button class="p" style="width:100%" ${left?'':'disabled'} onclick="doWd()">Request withdrawal</button>`}
+async function doWd(){sync();const c=C(),a=+$('#x_a').value,n=$('#x_n').value.trim(),used=d.wd.filter(x=>new Date(x.t).toDateString()==new Date().toDateString()).length;
+ if(used>=c.limit)return toast('Daily limit reached');if(!(a>=c.min))return toast('Minimum withdrawal is ৳'+c.min);if(a>me.bal)return toast('Not enough balance');if(!n)return toast('Enter mobile number');
+ try{await fs.runTransaction(async t=>{const ur=fs.collection('users').doc(String(me.id)),u=(await t.get(ur)).data();if(u.bal<a)throw Error('Not enough balance');u.bal-=a;addTx(u,'Withdraw request',-a);t.set(ur,u);const id=Date.now();t.set(fs.collection('wd').doc(String(id)),{id,uid:u.id,name:u.name,method:wm,amt:a,num:n,status:'pending',t:id})});toast('Withdrawal requested')}catch(e){toast(e.message)}}
+function profile(){const th=document.documentElement.dataset.theme;
+ return `<div class="hero"><div style="margin-bottom:6px;display:flex;justify-content:center">${me.photo?`<img src="${me.photo}" style="width:72px;height:72px;border-radius:50%;object-fit:cover">`:logo(72)}</div><b>${esc(me.ign)}</b>
+ <div class="g3" style="color:var(--tx);text-align:center"><div><small>Match played</small><b>${played(me.id)}</b></div><div><small>Balance</small><b>${me.bal}</b></div><div><small>Won</small><b>${won(me.id)}</b></div></div></div>
+ <div class="card menu">${[['💰 Wallet',"go('wallet')"],['🏧 Withdraw',"go('withdraw')"],['🙍 My profile',"go('mp')"],[`🌓 Theme: ${th}`,'toggleTheme()'],['📜 All rules',"go('rules')"],['🏆 Top players',"go('top')"],['💻 Developer profile','devM()']].map(([l,f])=>`<div class="m" onclick="${f}"><span>${l}</span><span class="sub">›</span></div>`).join('')}</div>
+ <div class="card"><div class="row"><div><div class="sub">Your referral code</div><b style="font-size:22px;letter-spacing:2px">${esc(me.ref||"…")}</b></div><button class="g" onclick="shareRef()">Share</button></div><p class="sub" style="margin-top:6px">When a friend signs up with your code and adds money, you earn ৳${C().refBonus??10}.</p></div><button class="p" style="width:100%" onclick="logout()">Logout</button><p class="sub" style="text-align:center;margin-top:14px">Version 5</p>`}
+function toggleTheme(){const t=document.documentElement.dataset.theme=='dark'?'light':'dark';localStorage.ffx_theme=t;document.documentElement.dataset.theme=t;render()}
+function devM(){modal(`<h2 class="hd">Developer profile</h2><div class="room"><pre>${esc(C().dev||'Developer details are not set yet.')}</pre></div>`)}
+function mp(){return `<div class="card"><h2 class="hd" style="margin-bottom:10px">My profile</h2><div style="text-align:center;margin-bottom:12px">${me.photo?`<img src="${me.photo}" style="width:96px;height:96px;border-radius:50%;object-fit:cover">`:logo(96)}<br><label>Change photo</label><input type="file" accept="image/*" onchange="setPhoto(this)"></div><label>Name</label><input value="${esc(me.name)}" disabled><label>Phone</label><input value="${esc(me.phone)}" disabled>
+ <label>Free Fire in-game name</label><input id="e_i" value="${esc(me.ign)}"><label>Free Fire UID</label><input id="e_u" value="${esc(me.uid)}" inputmode="numeric"><button class="p" style="width:100%" onclick="saveMp()">Save</button></div>`}
+async function saveMp(){sync();const i=$('#e_i').value.trim(),u=$('#e_u').value.trim();if(!i||!u)return toast('Fill in both fields');await fs.collection('users').doc(String(me.id)).update({ign:i,uid:u});fs.collection('board').doc(String(me.id)).set({ign:i},{merge:true});toast('Saved')}
+function rules(){const c=C(),by=c.rulesBy||{};return `<h2 class="hd" style="margin-bottom:10px">All rules</h2><div class="card"><h3 class="hd" style="margin-bottom:6px">General</h3><pre>${esc(c.rules)}</pre></div>${CATS.filter(x=>(by[x[0]]||'').trim()).map(x=>`<div class="card"><div class="row" style="justify-content:flex-start;gap:10px;margin-bottom:8px">${ico(x[0],30)}<h3 class="hd">${x[1]}</h3></div><pre>${esc(by[x[0]])}</pre></div>`).join('')}`}
+function topP(){const L=DB.board||[];
+ return `<h2 class="hd" style="margin-bottom:10px">Top players</h2><div class="card"><table><tr><th>#</th><th>Player</th><th>Matches</th><th>Won</th></tr>${L.map((x,i)=>`<tr><td>${i+1}</td><td>${x.photo?`<img src="${x.photo}" style="width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:6px">`:''}${esc(x.ign)}</td><td>${x.played||0}</td><td class="pos">৳${x.won}</td></tr>`).join('')||'<tr><td colspan="4" class="sub">No winners yet.</td></tr>'}</table></div>`}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(CLOUD)startCloud();else setTimeout(()=>toast('Firebase not connected: data stays on this device'),900);
+render();
+</script></body></html>
